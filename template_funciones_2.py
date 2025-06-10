@@ -15,23 +15,25 @@ import numpy as np
 
 
 def calcula_L(A):
-    # La función recibe la matriz de adyacencia A y calcula la matriz laplaciana
-    # Have fun!!
+    grados = np.sum(A, axis=1)
+    K = np.diag(grados)
+    L = A - K
     return L
 
 def calcula_R(A):
-    # La funcion recibe la matriz de adyacencia A y calcula la matriz de modularidad
-    # Have fun!!
+    
+    k = A.sum(axis=1) # calculamos el grado de cada nodo: k[i] = suma de la fila i
+    E2 = k.sum() # calculamos 2E = suma de todos los grados
+    P = np.outer(k, k) / E2  # construimos P por producto externo y normalización
+    R = A - P
     return R
 
 def calcula_lambda(L,v):
     # Recibe L y v y retorna el corte asociado
-    # Have fun!
-    return lambdon
+    return  (1/4) * float(v.T @ L @ v)
 
 def calcula_Q(R,v):
-    # La funcion recibe R y s y retorna la modularidad (a menos de un factor 2E)
-    return Q
+    return float(v.T @ R @ v)
 
 def metpot1(A,tol=1e-8,maxrep=np.inf):
    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones

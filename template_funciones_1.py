@@ -37,8 +37,8 @@ def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
     # Retorna la matriz C
-    grados = grados = np.sum(A, axis=1)
-    Kinv = Kinv = np.diag(1 / grados) # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
+    grados = np.sum(A, axis=1)
+    Kinv = np.diag(1 / grados) # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
     C = A.T @ Kinv # Calcula C multiplicando Kinv y A
     return C
 
