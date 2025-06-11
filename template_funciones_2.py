@@ -101,7 +101,7 @@ def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    # Recibe la matriz A, y un valor mu y retorna el segundo autovalor y autovector de la matriz A, 
    # suponiendo que sus autovalores son positivos excepto por el menor que es igual a 0
    # Retorna el segundo autovector, su autovalor, y si el metodo llegó a converger.
-   X = A + mu * np.eye(N) # Calculamos la matriz A shifteada en mu
+   X = A + mu * np.eye( A.shape[0]) # Calculamos la matriz A shifteada en mu
    iX = np.linalg.inv(X) # La invertimos
    defliX = deflaciona(iX) # La deflacionamos
    v,l,_ =  metpot1(defliX,tol=tol,maxrep=maxrep) # Buscamos su segundo autovector
@@ -120,7 +120,7 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
         return([nombres_s])
     else: # Sino:
         L = calcula_L(A) # Recalculamos el L
-        v,l,_ = metpotI2(L,0) # Encontramos el segundo autovector de L
+        v,l,_ = metpotI2(L,1e-3) # Encontramos el segundo autovector de L
         # Recortamos A en dos partes, la que está asociada a el signo positivo de v y la que está asociada al negativo
         Ap = A[np.ix_(v > 0, v > 0)] # Asociado al signo positivo
         Am = A[np.ix_(v < 0, v < 0)] # Asociado al signo negativo
