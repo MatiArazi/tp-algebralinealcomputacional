@@ -1,4 +1,3 @@
-#> Esto lo agregue yo. Hay que importar las cosas aca tambien para que no explote todo
 import numpy as np
 import scipy        
 
