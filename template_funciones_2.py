@@ -95,7 +95,10 @@ def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
             x[row] = (y[row] - U[row, row+1:] @ x[row+1:]) / U[row, row]
         B_inv[:, i] = x
 
-    return metpot1(B_inv,tol=tol,maxrep=maxrep)
+    v1,l1,ok1 = metpot1(B_inv,tol=tol,maxrep=maxrep)
+    l1 = 1/l1
+    l1 -= mu
+    return v1,l1,ok1
 
 def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    # Recibe la matriz A, y un valor mu y retorna el segundo autovalor y autovector de la matriz A, 
@@ -103,6 +106,8 @@ def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    # Retorna el segundo autovector, su autovalor, y si el metodo llegó a converger.
    B = A + mu * np.eye( A.shape[0]) # Calculamos la matriz A shifteada en mu
    v1, l1, _ = metpotI(B, mu)
+   l1 = 1/l1
+   l1 += mu
    deflB = B - l1 * np.outer(v1, v1)
    v2, lam2, ok2 = metpotI(deflB, mu, tol, maxrep)
    return v2, lam2, ok2
