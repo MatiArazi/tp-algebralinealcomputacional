@@ -44,19 +44,22 @@ def metpot1(A,tol=1e-8,maxrep=np.inf):
    v /= np.linalg.norm(v) # Lo normalizamos 
    v1 = A @ v # Aplicamos la matriz una vez
    v1 /= np.linalg.norm(v1) # normalizamos
-   l = calcula_lambda(A,v) # Calculamos el autovector estimado      #> calcula_lambda no calcula el autovalor!!!!
-   l1 = calcula_lambda(A,v1) # Y el estimado en el siguiente paso   #> Estan calculando cualquier cosa
-   nrep = 1 # Contador
+   l = float(v.T @ A @ v)# Calculamos el autovector estimado
+   l1 = float(v1.T @ A @ v1) # Y el estimado en el siguiente paso
+   nrep = 0 # Contador
    while np.abs(l1-l)/np.abs(l) > tol and nrep < maxrep: # Si estamos por debajo de la tolerancia buscada 
       v = v1 # actualizamos v y repetimos
       l = l1
       v1 = A @ v1 # Calculo nuevo v1
       v1 /= np.linalg.norm(v1) # Normalizo
-      l1 = calcula_lambda(A,v1) # Calculo autovector
+      l1 = float(v1.T @ A @ v1) # Calculo autovector
       nrep += 1 # Un pasito mas
    if not nrep < maxrep:
       print('MaxRep alcanzado')
-   l = calcula_lambda(A,v1) # Calculamos el autovalor
+   if (np.all(v1 == 0)):
+       l = 0
+   else:
+       l = (v1.T @ A @ v1) # Calculamos el autovalor
    return v1,l,nrep<maxrep
 
 def deflaciona(A,tol=1e-8,maxrep=np.inf):
@@ -73,14 +76,9 @@ def metpot2(A,v1,l1,tol=1e-8,maxrep=np.inf):
    return metpot1(deflA,tol,maxrep)
 
 
-def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
-    # Retorna el primer autovalor de la inversa de A + mu * I, junto a su autovector y si el método convergió.
-    N = A.shape[0]
-    B = A + mu * np.eye(N)
+def calcula_B_inv(B):
     L, U = calculaLU(B)
-
-    #> Estaria bueno que metan esto en una funcion aparte para que no embarre el codigo
-    # Construir B_inv vía LU
+    N = B.shape[0]
     B_inv = np.zeros((N, N))
     for i in range(N):
         # e_i
@@ -95,7 +93,13 @@ def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
         for row in range(N-1, -1, -1):
             x[row] = (y[row] - U[row, row+1:] @ x[row+1:]) / U[row, row]
         B_inv[:, i] = x
+    return B_inv
 
+def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
+    # Retorna el primer autovalor de la inversa de A + mu * I, junto a su autovector y si el método convergió.
+    N = A.shape[0]
+    B = A + mu * np.eye(N)
+    B_inv = calcula_B_inv(B)
     v1,l1,ok1 = metpot1(B_inv,tol=tol,maxrep=maxrep)
     l1 = 1/l1
     l1 -= mu
@@ -105,12 +109,12 @@ def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    # Recibe la matriz A, y un valor mu y retorna el segundo autovalor y autovector de la matriz A, 
    # suponiendo que sus autovalores son positivos excepto por el menor que es igual a 0
    # Retorna el segundo autovector, su autovalor, y si el metodo llegó a converger.
-   B = A + mu * np.eye( A.shape[0]) # Calculamos la matriz A shifteada en mu #> En metpotI ya shiftean, estan shifteando dos veces
-   v1, l1, _ = metpotI(B, mu)
-   l1 = 1/l1
-   l1 += mu #> Aca tendrian que restar en vez de sumar, sino solo estan sumando 2mu en vez de sumarla y restarla.
-   deflB = B - l1 * np.outer(v1, v1) #> Y la funcion que hicieron especificamente para esto?
-   v2, lam2, ok2 = metpotI(deflB, mu, tol, maxrep)
+   B = A + mu * np.eye( A.shape[0]) # Calculamos la matriz A shifteada en mu
+   B_inv = calcula_B_inv(B)
+   deflB = deflaciona(B_inv,tol,maxrep)
+   v2, lam2, ok2 = metpot1(deflB, tol, maxrep)
+   lam2 = 1/lam2
+   lam2 -= mu
    return v2, lam2, ok2
 
 
